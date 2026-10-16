@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fsl-projekt"
+version = "0.1.0"
+description = "Few-shot learning MLOps ladder on Vertex AI (meta-learning + active learning)."
+requires-python = ">=3.10"
+dependencies = [
+    "learn2learn",
+    "google-cloud-storage",
+    "google-cloud-aiplatform",
+    "torch",
+    "torchvision",
+    "matplotlib",
+    "cloudml-hypertune",
+    "pyarrow",
+    "pandas"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "ruff",
+]
+pipelines = [
+    "kfp",
+    "google-cloud-pipeline-components",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100

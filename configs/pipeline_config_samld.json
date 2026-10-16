@@ -1,0 +1,55 @@
+{
+  "project": "dark-data-discovery",
+  "region": "us-central1",
+  "bucket": "dark-data-discovery-fsl-data",
+  "dataset": "samld-case",
+  "run_type": "inner_loop",
+  "pipeline_template_repo": "fsl-pipelines",
+  "pipeline_yaml_path": "train_pipeline.yaml",
+  "serving_container_image_uri": "us-central1-docker.pkg.dev/dark-data-discovery/fsl-images/train:candidate",
+  "training_image_uri": "us-central1-docker.pkg.dev/dark-data-discovery/fsl-images/train:candidate",
+  "training": {
+    "n_way": 4,
+    "k_shot": 5,
+    "query": 5,
+    "seed": 0,
+    "train_iters": 600,
+    "eval_every": 50,
+    "val_episodes": 200,
+    "test_episodes": 1000,
+    "lr": 0.001,
+    "embedding_hid": 64,
+    "augmentation": "none",
+    "encoder": "mlp",
+    "fold": 0,
+    "mlp_depth": 2,
+    "mlp_dropout": 0.0,
+    "_comment": "samld baseline, fold 0. query=5 bo sampler grupowany po koncie wymaga ~2*(k_shot+query) okien na rozlacznych kontach, a najmniejsze typologie maja ~25 okien - przy 15 wypadlyby z puli i 5-klasowy fold nie zlozylby epizodu. augmentation=none: wektor cech nie ma symetrii, ktora zachowuje typologie. train_iters=600 ze screeningu (val 0.857 przy szczycie 0.890 w okolicy 500)."
+  },
+  "evaluation": {
+    "_comment": "Gate criteria for samld. accuracy_threshold 0.80: podloga losowego MLP na walidacji folda 0 to 0.6191 (3 ziarna, CI +/-0.014), typowy przebieg ze screeningu 0.85-0.89 - prog odrzuca zepsute przebiegi, nie gratuluje istnienia. Wyprowadzony PRZED pierwszym bramkowanym przebiegiem. max_std_threshold 0.15: przy query=5 epizod ma 25 zapytan, wiec granulacja 0.04 a samo losowanie daje std ~0.07 nawet przy idealnym modelu; prog 0.11 z domeny obrazowej (query=15, 75 zapytan) mierzylby tu liczbe zapytan, nie stabilnosc modelu.",
+    "accuracy_threshold": 0.9402,
+    "max_std_threshold": 0.15
+  },
+  "notifications": {
+    "_comment": "Adresy wpisywane do pipeline'u przy kompilacji. Kilku analitykow -> adres grupy Google.",
+    "analyst_emails": ["analityk@example.com"]
+  },
+
+  "compute": {
+    "_comment": "Plain KFP task resources (cpu/memory), not a Vertex machine_type. machine_type applies only when a step is wrapped as a Vertex CustomJob (e.g. via create_custom_training_job_op_from_component or CustomJob.from_local_script) — a plain pipeline task uses .set_cpu_request()/.set_memory_limit() instead. Keep both shapes here so either path can read from the same file.",
+    "cpu_request": "4",
+    "memory_limit": "16G",
+    "machine_type": "n1-standard-4"
+  },
+"hpo": {
+    "enabled": false,
+    "machine_type": "n1-standard-8",
+    "max_trials": 8,
+    "parallel": 4,
+    "val_episodes": 400,
+    "accelerator_type": "",
+    "accelerator_count": 0,
+    "params_source": "config"
+  }
+}

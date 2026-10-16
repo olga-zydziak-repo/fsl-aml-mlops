@@ -1,0 +1,11 @@
+# Dependencies for the inner_loop train_component (lightweight KFP component).
+# One package spec per line, same syntax as pip install (name, optional ==version).
+# Blank lines and lines starting with # are ignored.
+#
+# Edit THIS file to add/pin a dependency — no need to touch the pipeline
+# notebook's @dsl.component decorator.
+
+torch
+torchvision
+learn2learn
+google-cloud-storage
