@@ -1,0 +1,78 @@
+# CI for the public repo: every push and pull request to main.
+#   tests      — unit tests + the synthetic freeze/split equivalence tests (CPU torch, no GCP)
+#   pipelines  — both Vertex pipelines compile from the notebook with GCP stubbed (kfp + gcpc)
+#   hygiene    — nothing that looks like a key or a real e-mail address is in the tree
+# Nothing here touches GCP: no credentials, no network calls beyond pip.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+env:
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install (CPU torch, test deps only)
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy pandas pyarrow scipy networkx pytest
+          pip install -e . --no-deps
+      - name: Compile every Python file
+        run: python -m compileall -q src scripts tests
+      - name: Unit + equivalence tests
+        run: pytest -q tests
+
+  pipelines:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install (kfp + pipeline components, no torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pandas "kfp>=2.7" google-cloud-pipeline-components google-cloud-aiplatform
+          pip install -e . --no-deps
+      - name: Both Vertex pipelines compile from rung9_hpo.ipynb (GCP stubbed)
+        run: pytest -q tests/test_pipelines_compile.py
+
+  hygiene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: No keys, tokens or real e-mail addresses in the tree
+        run: |
+          set -euo pipefail
+          BAD=0
+          if git grep -nIE 'ghp_[A-Za-z0-9]{20,}|github_pat_|AIza[0-9A-Za-z_-]{30,}|BEGIN [A-Z ]*PRIVATE KEY|"key" *: *"[0-9a-f]{20,}|KAGGLE_KEY *= *.?[0-9a-f]{20,}' -- . ':!.github/workflows/ci.yml'; then
+            echo "::error::something above looks like a key or token"; BAD=1; fi
+          if git grep -hIE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+\.[a-z]{2,}' -- . ':!.github/workflows/ci.yml' \
+             | grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[a-z]{2,}' \
+             | grep -vE 'example\.(com|org)|noreply|gserviceaccount\.com|@github\.com|@users\.' | sort -u | grep .; then
+            echo "::error::real e-mail addresses above"; BAD=1; fi
+          if git ls-files | grep -E '\.(csv|parquet|pt|pth|ckpt|npz|pkl)$|pipeline.*\.yaml$'; then
+            echo "::error::data, model or compiled pipeline files above must not be in the repo"; BAD=1; fi
+          exit $BAD

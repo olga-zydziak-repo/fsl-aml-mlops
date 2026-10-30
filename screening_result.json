@@ -1,0 +1,52 @@
+{
+  "dataset": "resisc45",
+  "augmentation": "flip_rot90",
+  "winner": "resnet18_pretrained",
+  "history": [
+    {
+      "round": 1,
+      "encoder": "conv4",
+      "iters": 300,
+      "image_size": 84,
+      "val_accuracy": 0.6092444560925165,
+      "seconds": 569.8,
+      "parameters": 113088
+    },
+    {
+      "round": 1,
+      "encoder": "resnet12",
+      "iters": 300,
+      "image_size": 84,
+      "val_accuracy": 0.6544889038801194,
+      "seconds": 1077.0,
+      "parameters": 12424320
+    },
+    {
+      "round": 1,
+      "encoder": "resnet18_pretrained",
+      "iters": 300,
+      "image_size": 224,
+      "val_accuracy": 0.7282666817307473,
+      "seconds": 1141.6,
+      "parameters": 11176512
+    },
+    {
+      "round": 2,
+      "encoder": "resnet18_pretrained",
+      "iters": 600,
+      "image_size": 224,
+      "val_accuracy": 0.7493777958552043,
+      "seconds": 1726.3,
+      "parameters": 11176512
+    },
+    {
+      "round": 2,
+      "encoder": "resnet12",
+      "iters": 600,
+      "image_size": 84,
+      "val_accuracy": 0.6689777928590774,
+      "seconds": 1660.9,
+      "parameters": 12424320
+    }
+  ]
+}

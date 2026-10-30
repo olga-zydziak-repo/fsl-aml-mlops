@@ -1,0 +1,49 @@
+{
+  "project": "dark-data-discovery",
+  "region": "us-central1",
+  "bucket": "dark-data-discovery-fsl-data",
+  "dataset": "resisc45",
+  "run_type": "inner_loop",
+  "pipeline_template_repo": "fsl-pipelines",
+  "pipeline_yaml_path": "train_pipeline.yaml",
+  "serving_container_image_uri": "us-central1-docker.pkg.dev/dark-data-discovery/fsl-images/train:candidate",
+   "training_image_uri": "us-central1-docker.pkg.dev/dark-data-discovery/fsl-images/train:candidate",
+  "training": {
+    "n_way": 5,
+    "k_shot": 5,
+    "query": 15,
+    "seed": 0,
+    "train_iters": 1400,
+    "eval_every": 50,
+    "val_episodes": 200,
+    "test_episodes": 1000,
+    "lr": 0.001,
+    "embedding_hid": 64,
+    "augmentation": "flip_rot90",
+    "_comment": "as-is baseline for resisc45: the local run's settings (lr 1e-3, hid 64, convergence ~1400 iters). HPO for this domain comes after the baseline is         recorded; winner will land in hpo/resisc45/best/."
+  },
+
+   "evaluation": {
+    "_comment": "Gate criteria. accuracy_threshold: the lower bound of the 95% CI (mean - ci95) must be >= this, so we're statistically confident the model is above the bar, not just on average. max_std_threshold: the model must also be stable - std across test episodes <= this. Add more criteria here (e.g. regression-vs-previous) and wire them into the gate's checks list.",
+    "accuracy_threshold": 0.642,
+    "max_std_threshold": 0.11
+  },
+
+
+  "compute": {
+    "_comment": "Plain KFP task resources (cpu/memory), not a Vertex machine_type. machine_type applies only when a step is wrapped as a Vertex CustomJob (e.g. via create_custom_training_job_op_from_component or CustomJob.from_local_script) — a plain pipeline task uses .set_cpu_request()/.set_memory_limit() instead. Keep both shapes here so either path can read from the same file.",
+    "cpu_request": "4",
+    "memory_limit": "16G",
+    "machine_type": "n1-standard-4"
+  },
+"hpo": {
+    "enabled": false,
+    "machine_type": "n1-standard-8",
+    "max_trials": 8,
+    "parallel": 4,
+    "val_episodes": 400,
+    "accelerator_type": "",
+    "accelerator_count": 0,
+    "params_source": "config"
+  }
+}

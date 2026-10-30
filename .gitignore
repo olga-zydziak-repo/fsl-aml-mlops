@@ -1,0 +1,72 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+.eggs/
+build/
+dist/
+
+# ---- Environments ----
+.venv/
+venv/
+env/
+.python-version
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- Data and models: GCS is the source of truth, never git ----
+# Anchored with a leading "/" so src/fsl/data/ (loader code) is NOT ignored.
+/data/
+/data_cache/
+/scratch/
+/tmp/
+/explain_reports/
+/al_reports/
+saml_d_source/
+SAML-D*.csv
+*.parquet
+*.tar.gz
+*.pkl
+*.npz
+*.pt
+*.pth
+*.ckpt
+
+# ---- Compiled pipelines: regenerated from notebooks, versions live in Artifact Registry ----
+/*_pipeline.yaml
+pipeline-*.yaml
+*.yaml.bak
+
+# ---- Secrets: never commit ----
+.env
+.env.*
+*.key
+*.pem
+service-account*.json
+credentials*.json
+kaggle.json
+.kaggle/
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# ---- Local tooling ----
+.terraform/
+.gcloudignore
+
+# ---- Only in the public copy: stray files, outputs, documents of other projects ----
+/gitignore
+/*.docx
+*.csv
+*.log
+*.zip
+*.h5
+*.onnx
+*.safetensors
+mlruns/
+wandb/
